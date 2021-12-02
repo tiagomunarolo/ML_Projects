@@ -5,7 +5,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import jaccard_score, accuracy_score, f1_score
+from sklearn.metrics import jaccard_score, accuracy_score, f1_score, confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
 from sklearn.feature_selection import SelectKBest
@@ -35,6 +35,8 @@ dataset = pd.read_csv('./datasets/fetal_health.csv')
 MODEL_COUNT = 0
 BEST_MODEL = None
 TOTAL_SCORE = 0
+TOTAL_FEATURES = 1
+BEST_MODEL_NAME = 'BEST_MODEL_FETAL_HEALTH'
 # Preprocess dataset
 dataset.dropna(inplace=True)
 X = dataset.drop(columns=['fetal_health'])
@@ -83,12 +85,16 @@ for index, num_features in enumerate(range(1, len(X.columns), 1)):
         if total_score > TOTAL_SCORE:
             TOTAL_SCORE = total_score
             BEST_MODEL = grid_search.best_estimator_
+            TOTAL_FEATURES = num_features
         MODEL_COUNT += 1
 
 # Sort descending by best models
 models_result_dataset.sort_values(by=['TOTAL_SCORE'], ascending=False, inplace=True)
 
-with open(file=f'./models/{BEST_MODEL}_FETAL_HEALTH.pickle', mode='wb') as model:
+with open(file=f'./models/fetal_health/{BEST_MODEL_NAME}.pickle', mode='wb') as model:
     pickle.dump(BEST_MODEL, model)
+    X_ = SelectKBest(k=TOTAL_FEATURES).fit_transform(X, y)
+    X_ = StandardScaler().fit_transform(X_)
+    print('\nFINAL CONFUSION MATRIX:\n', confusion_matrix(y, BEST_MODEL.predict(X_, y)))
 
-models_result_dataset.to_csv(path_or_buf='./models/fetal_path.csv')
+models_result_dataset.to_csv(path_or_buf='./models/fetal_health/fetal_health.csv')
