@@ -50,6 +50,12 @@ svc_p = {'kernel': ['linear', 'poly', 'rbf', 'sigmoid']}
 knn_p = {'n_neighbors': range(1, 20, 1), 'weights': ['uniform', 'distance'],
          'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute']}
 
+# with open(file=f'./models/fetal_health/{BEST_MODEL_NAME}.pickle', mode='rb') as model:
+#     best = pickle.load(model)
+#     X_ = SelectKBest(k=12).fit_transform(X, y)
+#     X_ = StandardScaler().fit_transform(X_)
+#     print('\nFINAL CONFUSION MATRIX:\n', confusion_matrix(y, best.predict(X_)))
+
 for index, num_features in enumerate(range(1, len(X.columns), 1)):
     # Remove unused columns, select K best and then normalize it
     X_ = SelectKBest(k=num_features).fit_transform(X, y)
@@ -95,6 +101,6 @@ with open(file=f'./models/fetal_health/{BEST_MODEL_NAME}.pickle', mode='wb') as 
     pickle.dump(BEST_MODEL, model)
     X_ = SelectKBest(k=TOTAL_FEATURES).fit_transform(X, y)
     X_ = StandardScaler().fit_transform(X_)
-    print('\nFINAL CONFUSION MATRIX:\n', confusion_matrix(y, BEST_MODEL.predict(X_, y)))
+    print('\nFINAL CONFUSION MATRIX:\n', confusion_matrix(y, BEST_MODEL.predict(X_)))
 
 models_result_dataset.to_csv(path_or_buf='./models/fetal_health/fetal_health.csv')
