@@ -1,11 +1,17 @@
 import pandas as pd
 import numpy as np
 import pickle
+
+# Models
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import StandardScaler
+
+# PreProcessing and metrics
+from sklearn.preprocessing import StandardScaler, PolynomialFeatures
 from sklearn.metrics import jaccard_score, accuracy_score, f1_score, confusion_matrix
+
+# Model selection
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
 from sklearn.feature_selection import SelectKBest
@@ -37,9 +43,11 @@ BEST_MODEL = None
 TOTAL_SCORE = 0
 TOTAL_FEATURES = 1
 BEST_MODEL_NAME = 'BEST_MODEL_FETAL_HEALTH'
+
 # Preprocess dataset
 dataset.dropna(inplace=True)
 X = dataset.drop(columns=['fetal_health'])
+X = PolynomialFeatures(degree=2).fit_transform(X)
 y = dataset['fetal_health']
 
 models_result_dataset = pd.DataFrame(columns=['F1', 'ACC', 'JACCARD', 'AVG_SCORE', 'TOTAL_SCORE'])
@@ -50,13 +58,7 @@ svc_p = {'kernel': ['linear', 'poly', 'rbf', 'sigmoid']}
 knn_p = {'n_neighbors': range(1, 20, 1), 'weights': ['uniform', 'distance'],
          'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute']}
 
-# with open(file=f'./models/fetal_health/{BEST_MODEL_NAME}.pickle', mode='rb') as model:
-#     best = pickle.load(model)
-#     X_ = SelectKBest(k=12).fit_transform(X, y)
-#     X_ = StandardScaler().fit_transform(X_)
-#     print('\nFINAL CONFUSION MATRIX:\n', confusion_matrix(y, best.predict(X_)))
-
-for index, num_features in enumerate(range(1, len(X.columns), 1)):
+for index, num_features in enumerate(range(1, X.shape[1], 5)):
     # Remove unused columns, select K best and then normalize it
     X_ = SelectKBest(k=num_features).fit_transform(X, y)
     X_ = StandardScaler().fit_transform(X_)
